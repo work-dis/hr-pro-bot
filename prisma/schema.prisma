@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Candidate {
+  id               String   @id @default(cuid())
+  telegramUserId   BigInt   @unique
+  telegramUsername String?
+  name             String
+  phone            String?
+  city             String?
+  resume           Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([city])
+  @@index([createdAt])
+}
+
+model Vacancy {
+  id        String   @id @default(cuid())
+  title     String
+  city      String
+  salary    String
+  tags      Json?
+  agencyId  String
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([city])
+  @@index([agencyId])
+  @@index([createdAt])
+}
+
+model Agency {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  vacancies Vacancy[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model ProcessedUpdate {
+  id          String   @id @default(cuid())
+  updateId    BigInt   @unique
+  chatId      BigInt?
+  messageId   BigInt?
+  status      String   @default("PROCESSING")
+  lastError   String?
+  processedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

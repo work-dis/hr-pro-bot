@@ -1,0 +1,26 @@
+{
+  "name": "hr-pro-bot",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "prisma generate && tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:migrate:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@vercel/node": "^5.1.15",
+    "prisma": "^6.6.0",
+    "typescript": "^5.8.3",
+    "vercel": "^39.4.0"
+  }
+}
