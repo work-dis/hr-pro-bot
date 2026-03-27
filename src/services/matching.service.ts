@@ -4,6 +4,7 @@ import { extractSkills } from "../validation/resume";
 
 export interface MatchCandidateInput {
   city?: string | null;
+  skills?: string[];
   resume?: Prisma.JsonValue | null;
 }
 
@@ -17,7 +18,7 @@ export class MatchingService {
 
   async matchCandidate(input: MatchCandidateInput): Promise<VacancyMatch[]> {
     const vacancies = await this.vacancyRepository.findRelevant(input.city);
-    const candidateSkills = extractSkills(input.resume);
+    const candidateSkills = input.skills && input.skills.length > 0 ? input.skills : extractSkills(input.resume);
     const candidateSkillSet = new Set(candidateSkills);
     const normalizedCity = input.city?.trim().toLowerCase() ?? null;
 
