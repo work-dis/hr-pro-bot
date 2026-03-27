@@ -20,6 +20,21 @@ enum CandidateOnboardingStep {
   COMPLETED
 }
 
+enum HrOnboardingStep {
+  IDLE
+  WAITING_VACANCY_TITLE
+  WAITING_VACANCY_COUNTRY
+  WAITING_VACANCY_CITY
+  WAITING_VACANCY_ACTIVITY
+  WAITING_VACANCY_SALARY
+}
+
+enum ApplicationStatus {
+  SENT
+  ACCEPTED
+  REJECTED
+}
+
 model Candidate {
   id               String                  @id @default(cuid())
   telegramUserId   BigInt                  @unique
@@ -50,6 +65,7 @@ model Vacancy {
   city      String
   activity  String
   salary    String
+  isActive  Boolean  @default(true)
   tags      Json?
   agencyId  String
   agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
@@ -65,21 +81,41 @@ model Vacancy {
 }
 
 model Agency {
-  id        String    @id @default(cuid())
-  name      String    @unique
+  id        String   @id @default(cuid())
+  name      String   @unique
   hrChatId  BigInt?
   vacancies Vacancy[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  hrUsers   HrUser[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HrUser {
+  id               String           @id @default(cuid())
+  telegramUserId   BigInt           @unique
+  telegramUsername String?
+  name             String
+  agencyId         String
+  agency           Agency           @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  canManageVacancies Boolean        @default(true)
+  isActive         Boolean          @default(true)
+  onboardingStep   HrOnboardingStep @default(IDLE)
+  vacancyDraft     Json?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([agencyId])
+  @@index([createdAt])
 }
 
 model VacancyApplication {
-  id          String   @id @default(cuid())
+  id          String            @id @default(cuid())
   candidateId String
   vacancyId   String
-  status      String   @default("SENT")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      ApplicationStatus @default(SENT)
+  reviewedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   vacancy   Vacancy   @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
