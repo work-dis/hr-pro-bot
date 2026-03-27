@@ -7,16 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CandidateOnboardingStep {
+  IDLE
+  WAITING_NAME
+  WAITING_AGE
+  WAITING_CITY
+  WAITING_DOCUMENTS
+  WAITING_SKILLS
+  WAITING_SEARCH_COUNTRY
+  WAITING_SEARCH_CITY
+  WAITING_SEARCH_ACTIVITY
+  COMPLETED
+}
+
 model Candidate {
-  id               String   @id @default(cuid())
-  telegramUserId   BigInt   @unique
+  id               String                  @id @default(cuid())
+  telegramUserId   BigInt                  @unique
   telegramUsername String?
   name             String
+  age              Int?
   phone            String?
   city             String?
+  documentTypes    String[]                @default([])
+  skills           String[]                @default([])
+  onboardingStep   CandidateOnboardingStep @default(IDLE)
+  searchCountry    String?
+  searchCity       String?
+  searchActivity   String?
   resume           Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  applications     VacancyApplication[]
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
 
   @@index([city])
   @@index([createdAt])
@@ -25,15 +46,20 @@ model Candidate {
 model Vacancy {
   id        String   @id @default(cuid())
   title     String
+  country   String
   city      String
+  activity  String
   salary    String
   tags      Json?
   agencyId  String
   agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  applications VacancyApplication[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([country])
   @@index([city])
+  @@index([activity])
   @@index([agencyId])
   @@index([createdAt])
 }
@@ -41,9 +67,26 @@ model Vacancy {
 model Agency {
   id        String    @id @default(cuid())
   name      String    @unique
+  hrChatId  BigInt?
   vacancies Vacancy[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+model VacancyApplication {
+  id          String   @id @default(cuid())
+  candidateId String
+  vacancyId   String
+  status      String   @default("SENT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancy   Vacancy   @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, vacancyId])
+  @@index([vacancyId])
+  @@index([createdAt])
 }
 
 model ProcessedUpdate {
