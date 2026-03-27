@@ -1,4 +1,4 @@
-import type { Prisma, Candidate } from "@prisma/client";
+import { Prisma, type Candidate } from "@prisma/client";
 import { prisma } from "../db/prisma";
 
 export interface UpsertCandidateInput {

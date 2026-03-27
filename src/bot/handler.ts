@@ -60,6 +60,11 @@ export async function handleUpdate(update: unknown): Promise<void> {
 async function handleStartCommand(message: TelegramMessage): Promise<void> {
   const from = message.from;
 
+  if (!from) {
+    log("warn", "missing_message_sender_start", { messageId: message.message_id });
+    return;
+  }
+
   await candidateRepository.upsertByTelegramUser({
     telegramUserId: BigInt(from.id),
     telegramUsername: from.username ?? null,
@@ -74,6 +79,12 @@ async function handleStartCommand(message: TelegramMessage): Promise<void> {
 
 async function handleResumeMessage(message: TelegramMessage): Promise<void> {
   const from = message.from;
+
+  if (!from) {
+    log("warn", "missing_message_sender_resume", { messageId: message.message_id });
+    return;
+  }
+
   const parsedResume = parseAndValidateResume(message.text ?? "");
 
   if (!parsedResume.ok) {
